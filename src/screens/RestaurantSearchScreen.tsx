@@ -40,6 +40,7 @@ const DEFAULT_REGION: Region = {
 
 const RestaurantSearchScreen: React.FC<Props> = ({ navigation }) => {
   const [query, setQuery] = useState('');
+  const [keyword, setKeyword] = useState('');
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<PlaceResult[]>([]);
   const [searchCenter, setSearchCenter] = useState<{ lat: number; lon: number } | null>(null);
@@ -65,7 +66,7 @@ const RestaurantSearchScreen: React.FC<Props> = ({ navigation }) => {
     setResults([]);
     setSelected(null);
     try {
-      const places = await searchNearbyRestaurants(lat, lon);
+      const places = await searchNearbyRestaurants(lat, lon, 1500, keyword);
       const sorted = places.sort((a, b) =>
         distanceKm(lat, lon, a.lat, a.lon) - distanceKm(lat, lon, b.lat, b.lon)
       );
@@ -200,6 +201,25 @@ const RestaurantSearchScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.keywordBar}>
+        <Ionicons name="restaurant-outline" size={16} color="#999" style={styles.keywordIcon} />
+        <TextInput
+          style={styles.keywordInput}
+          placeholder="Search by type, e.g. pizza, tacos..."
+          value={keyword}
+          onChangeText={setKeyword}
+          onSubmitEditing={handleSearch}
+          returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {keyword.length > 0 && (
+          <TouchableOpacity onPress={() => setKeyword('')}>
+            <Ionicons name="close-circle" size={18} color="#bbb" />
+          </TouchableOpacity>
+        )}
+      </View>
+
       {/* Map */}
       <MapView ref={mapRef} style={styles.map} region={region} onRegionChangeComplete={setRegion}>
         {results.map((place, index) => (
@@ -315,11 +335,31 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     padding: 12,
+    paddingBottom: 6,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    gap: 8,
+  },
+  keywordBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingBottom: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     alignItems: 'center',
     gap: 8,
+  },
+  keywordIcon: { marginLeft: 2 },
+  keywordInput: {
+    flex: 1,
+    height: 36,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   searchInput: {
     flex: 1,

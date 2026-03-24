@@ -57,14 +57,18 @@ export async function geocodeAddress(query: string): Promise<{ lat: number; lon:
 export async function searchNearbyRestaurants(
   lat: number,
   lon: number,
-  radiusMeters = 1500
+  radiusMeters = 1500,
+  keyword = ''
 ): Promise<PlaceResult[]> {
-  const url =
+  let url =
     `${FSQ_BASE}/search` +
     `?ll=${lat},${lon}` +
     `&radius=${radiusMeters}` +
     `&categories=${FOOD_CATEGORY}` +
     `&limit=50`;
+  if (keyword.trim()) {
+    url += `&query=${encodeURIComponent(keyword.trim())}`;
+  }
 
   const res = await fetch(url, { headers: FSQ_HEADERS });
 

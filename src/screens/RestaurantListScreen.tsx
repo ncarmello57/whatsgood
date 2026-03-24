@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StarRating from 'react-native-star-rating-widget';
@@ -17,6 +18,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { DatabaseService } from '../services/DatabaseService';
 import { RestaurantWithStats } from '../models/types';
+
+const CATEGORIES = [
+  'All', 'American', 'BBQ', 'Breakfast', 'Burgers', 'Chinese', 'Fast Food',
+  'French', 'Greek', 'Indian', 'Italian', 'Japanese', 'Korean', 'Mediterranean',
+  'Mexican', 'Pizza', 'Seafood', 'Steakhouse', 'Sushi', 'Thai', 'Vietnamese',
+];
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RestaurantList'>;
 
@@ -38,6 +45,7 @@ const RestaurantListScreen: React.FC<Props> = ({ navigation }) => {
   const [restaurants, setRestaurants] = useState<RestaurantWithStats[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<RestaurantWithStats[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
 
   const loadRestaurants = async () => {
@@ -61,18 +69,23 @@ const RestaurantListScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredRestaurants(restaurants);
-    } else {
-      const filtered = restaurants.filter(
+    let filtered = restaurants;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
         (r) =>
-          r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (r.cuisine && r.cuisine.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (r.address && r.address.toLowerCase().includes(searchQuery.toLowerCase()))
+          r.name.toLowerCase().includes(q) ||
+          (r.cuisine && r.cuisine.toLowerCase().includes(q)) ||
+          (r.address && r.address.toLowerCase().includes(q))
       );
-      setFilteredRestaurants(filtered);
     }
-  }, [searchQuery, restaurants]);
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(
+        (r) => r.cuisine && r.cuisine.toLowerCase().includes(selectedCategory.toLowerCase())
+      );
+    }
+    setFilteredRestaurants(filtered);
+  }, [searchQuery, selectedCategory, restaurants]);
 
   const renderRestaurantItem = ({ item }: { item: RestaurantWithStats }) => (
     <TouchableOpacity
@@ -166,6 +179,26 @@ const RestaurantListScreen: React.FC<Props> = ({ navigation }) => {
           onChangeText={setSearchQuery}
           autoCapitalize="none"
         />
+      </View>
+
+      <View style={styles.categoryBar}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryBarContent}
+        >
+          {CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[styles.categoryChip, selectedCategory === cat && styles.categoryChipActive]}
+              onPress={() => setSelectedCategory(cat)}
+            >
+              <Text style={[styles.categoryChipText, selectedCategory === cat && styles.categoryChipTextActive]}>
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {filteredRestaurants.length === 0 ? (
@@ -322,6 +355,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#bbb',
     textAlign: 'center',
+  },
+  categoryBar: {
+    height: 54,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  categoryBarContent: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoryChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  categoryChipActive: {
+    backgroundColor: '#2196F3',
+    borderColor: '#2196F3',
+  },
+  categoryChipText: {
+    fontSize: 13,
+    color: '#555',
+    fontWeight: '500',
+  },
+  categoryChipTextActive: {
+    color: '#fff',
   },
   fab: {
     position: 'absolute',
