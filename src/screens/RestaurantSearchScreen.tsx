@@ -202,9 +202,9 @@ const RestaurantSearchScreen: React.FC<Props> = ({ navigation }) => {
 
       {/* Map */}
       <MapView ref={mapRef} style={styles.map} region={region} onRegionChangeComplete={setRegion}>
-        {results.map((place) => (
+        {results.map((place, index) => (
           <Marker
-            key={place.fsqId}
+            key={place.fsqId ?? `place-${index}`}
             coordinate={{ latitude: place.lat, longitude: place.lon }}
             title={place.name}
             description={place.address}
