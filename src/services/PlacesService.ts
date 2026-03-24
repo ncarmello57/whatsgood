@@ -78,10 +78,13 @@ export async function searchNearbyRestaurants(
   }
 
   const data = await res.json();
-  console.log('FSQ sample result:', JSON.stringify(data.results?.[0], null, 2));
+  if (__DEV__ && data.results?.[0]) {
+    console.log('FSQ sample result:', JSON.stringify(data.results[0], null, 2));
+  }
   return (data.results as any[])
     .filter((place: any) => isFoodPlace(place.categories))
-    .map(mapResult);
+    .map(mapResult)
+    .filter((p) => p.lat !== 0 || p.lon !== 0);
 }
 
 function mapResult(place: any): PlaceResult {
@@ -101,10 +104,10 @@ function mapResult(place: any): PlaceResult {
   const cuisine = allCategories.length > 1 ? allCategories.slice(1).join(', ') : undefined;
 
   return {
-    fsqId: place.fsq_id,
+    fsqId: place.fsq_place_id ?? place.fsq_id,
     name: place.name,
-    lat: place.geocodes?.main?.latitude ?? 0,
-    lon: place.geocodes?.main?.longitude ?? 0,
+    lat: place.latitude ?? 0,
+    lon: place.longitude ?? 0,
     address: address || undefined,
     phone: place.tel,
     website: place.website,

@@ -226,8 +226,6 @@ const RestaurantSearchScreen: React.FC<Props> = ({ navigation }) => {
           <Marker
             key={place.fsqId ?? `place-${index}`}
             coordinate={{ latitude: place.lat, longitude: place.lon }}
-            title={place.name}
-            description={place.address}
             pinColor={selected?.fsqId === place.fsqId ? '#FF5722' : '#2196F3'}
             onPress={() => handleMarkerPress(place)}
           />
@@ -264,8 +262,9 @@ const RestaurantSearchScreen: React.FC<Props> = ({ navigation }) => {
 
       {/* Selected restaurant detail modal */}
       <Modal visible={!!selected} transparent animationType="slide" onRequestClose={() => setSelected(null)}>
-        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setSelected(null)} />
-        {selected && (
+        <View style={styles.modalContainer}>
+          <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setSelected(null)} />
+          {selected && (
           <View style={styles.detailPanel}>
             <View style={styles.detailHandle} />
             <ScrollView>
@@ -324,7 +323,8 @@ const RestaurantSearchScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.addButtonText}>{adding ? 'Adding...' : 'Add to My List'}</Text>
             </TouchableOpacity>
           </View>
-        )}
+          )}
+        </View>
       </Modal>
     </KeyboardAvoidingView>
   );
@@ -435,7 +435,8 @@ const styles = StyleSheet.create({
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   emptyText: { marginTop: 12, fontSize: 15, color: '#aaa', textAlign: 'center', lineHeight: 22 },
   // Modal / detail panel
-  modalBackdrop: { flex: 1 },
+  modalContainer: { flex: 1, justifyContent: 'flex-end' },
+  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' },
   detailPanel: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
